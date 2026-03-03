@@ -21,7 +21,7 @@ The `mekong` CLI is the easiest way to use MekongTunnel — no SSH flags, auto-r
 ### macOS (Apple Silicon — M1, M2, M3)
 
 ```bash
-sudo curl -L https://github.com/MuyleangIng/MekongTunnel/releases/download/v1.4.1/mekong-darwin-arm64 -o /usr/local/bin/mekong
+sudo curl -L https://github.com/MuyleangIng/MekongTunnel/releases/download/v1.4.3/mekong-darwin-arm64 -o /usr/local/bin/mekong
 sudo chmod +x /usr/local/bin/mekong
 xattr -d com.apple.quarantine /usr/local/bin/mekong
 mekong 3000
@@ -30,7 +30,7 @@ mekong 3000
 ### macOS (Intel)
 
 ```bash
-sudo curl -L https://github.com/MuyleangIng/MekongTunnel/releases/download/v1.4.1/mekong-darwin-amd64 -o /usr/local/bin/mekong
+sudo curl -L https://github.com/MuyleangIng/MekongTunnel/releases/download/v1.4.3/mekong-darwin-amd64 -o /usr/local/bin/mekong
 sudo chmod +x /usr/local/bin/mekong
 xattr -d com.apple.quarantine /usr/local/bin/mekong
 mekong 3000
@@ -39,7 +39,7 @@ mekong 3000
 ### Linux (amd64)
 
 ```bash
-sudo curl -L https://github.com/MuyleangIng/MekongTunnel/releases/download/v1.4.1/mekong-linux-amd64 -o /usr/local/bin/mekong
+sudo curl -L https://github.com/MuyleangIng/MekongTunnel/releases/download/v1.4.3/mekong-linux-amd64 -o /usr/local/bin/mekong
 sudo chmod +x /usr/local/bin/mekong
 mekong 3000
 ```
@@ -47,14 +47,14 @@ mekong 3000
 ### Linux (arm64)
 
 ```bash
-sudo curl -L https://github.com/MuyleangIng/MekongTunnel/releases/download/v1.4.1/mekong-linux-arm64 -o /usr/local/bin/mekong
+sudo curl -L https://github.com/MuyleangIng/MekongTunnel/releases/download/v1.4.3/mekong-linux-arm64 -o /usr/local/bin/mekong
 sudo chmod +x /usr/local/bin/mekong
 mekong 3000
 ```
 
 ### Windows
 
-Download [`mekong-windows-amd64.exe`](https://github.com/MuyleangIng/MekongTunnel/releases/download/v1.4.1/mekong-windows-amd64.exe), rename it to `mekong.exe`, and add it to your PATH. Then run `mekong 3000`.
+Download [`mekong-windows-amd64.exe`](https://github.com/MuyleangIng/MekongTunnel/releases/download/v1.4.3/mekong-windows-amd64.exe), rename it to `mekong.exe`, and add it to your PATH. Then run `mekong 3000`.
 
 ---
 
@@ -63,15 +63,6 @@ Download [`mekong-windows-amd64.exe`](https://github.com/MuyleangIng/MekongTunne
 ```bash
 # Expose localhost:3000
 mekong 3000
-
-# Expose two ports at once (each gets its own URL)
-mekong 3000 8080
-
-# Request a custom subdomain
-mekong 8080 --subdomain myapp
-# → https://myapp.mekongtunnel.dev
-# If "myapp" is taken, the server suggests the next available name:
-# ⚠  "myapp" was taken — using myapp-a1b2 instead
 
 # Run tunnel in background (daemon mode) — frees your terminal
 mekong -d 3000
@@ -84,9 +75,6 @@ mekong status 3000
 
 # Stop a background tunnel
 mekong stop
-
-# Use a custom server
-mekong 3000 --server mekongtunnel.dev
 
 # No QR code
 mekong 3000 --no-qr
@@ -108,8 +96,6 @@ mekong update
 | Auto-reconnect | Reconnects automatically with exponential backoff (2s → 60s max) |
 | QR code | Printed in terminal — scan with your phone instantly |
 | Clipboard | Public URL copied to clipboard automatically |
-| Custom subdomain | `--subdomain myapp` requests a named URL; suggests alternatives if taken |
-| Multi-port | `mekong 3000 8080` — each port gets its own URL, runs concurrently |
 | Daemon mode | `-d` runs in background; logs go to `~/.mekong/mekong.log` |
 | Status command | `mekong status` shows your active tunnels (yours only, not other users') |
 | Stop command | `mekong stop` gracefully stops a background tunnel |
@@ -142,16 +128,6 @@ mekong stop        # send SIGTERM and clean up
 
 Logs are written to `~/.mekong/mekong.log` — each user has their own state under `~/.mekong/`.
 
-### Custom subdomain
-
-```bash
-mekong 8080 --subdomain myapp
-# → https://myapp.mekongtunnel.dev  (if available)
-# → https://myapp-a1b2.mekongtunnel.dev  (if myapp is taken — server suggests next free name)
-```
-
-Rules: lowercase letters, digits, and hyphens; 3–50 characters; no leading or trailing hyphen.
-
 > **Note — Auto-reconnect and IP blocking:**
 > The `mekong` CLI reconnects automatically when the tunnel drops. If the server blocks your IP, the CLI detects it and exits instead of retrying:
 > ```
@@ -168,7 +144,7 @@ MekongTunnel is a self-hosted SSH tunnel server written in Go.
 It works like ngrok or Cloudflare Tunnel but you run it yourself on your own domain.
 
 When a client connects, the server:
-1. Assigns a public URL (auto-generated or your custom subdomain)
+1. Assigns a random public URL
 2. Terminates TLS on port 443
 3. Reverse-proxies every HTTPS request through the SSH connection to the client's local port
 
@@ -254,26 +230,6 @@ ssh -t -R 80:localhost:8080 \
     -o ServerAliveInterval=60 \
     -o ServerAliveCountMax=3 \
     yourdomain.com
-```
-
-### Run multiple tunnels at the same time
-
-With `mekong`:
-
-```bash
-mekong 3000 8080
-# Port 3000 → https://happy-tiger-a1b2.mekongtunnel.dev
-# Port 8080 → https://swift-eagle-c3d4.mekongtunnel.dev
-```
-
-With raw SSH (open multiple terminals):
-
-```bash
-# Terminal 1 — frontend
-ssh -t -R 80:localhost:3000 yourdomain.com
-
-# Terminal 2 — backend API
-ssh -t -R 80:localhost:8080 yourdomain.com
 ```
 
 ### Skip the browser phishing warning (for API clients)
@@ -481,7 +437,7 @@ MekongTunnel/
 │   │   ├── stats.go             ← web dashboard (/) and JSON API (/api/stats)
 │   │   └── abuse.go             ← rate limiting and IP blocking
 │   ├── domain/                  ← subdomain generation and validation
-│   │   └── domain.go            ← auto-generate + custom subdomain support
+│   │   └── domain.go            ← auto-generate random subdomains
 │   └── tunnel/                  ← per-tunnel state and lifecycle
 │       ├── tunnel.go            ← request counter, rate limiter, logger
 │       ├── ratelimit.go         ← token-bucket rate limiter (10 req/s, burst 20)
@@ -613,7 +569,7 @@ Your Browser
 ```
 
 1. You run `mekong 8080` (or `ssh -t -R 80:localhost:8080 yourdomain.com`)
-2. Server assigns a subdomain (or honours your `--subdomain` request) and shows the public URL
+2. Server assigns a random subdomain and shows the public URL
 3. A browser opens `https://happy-tiger-a1b2c3d4.yourdomain.com`
 4. Server looks up the tunnel, dials the internal listener
 5. Opens a `forwarded-tcpip` SSH channel back to your client
@@ -754,13 +710,18 @@ docker compose restart
 
 ## Changelog
 
+### v1.4.3
+- **Docs** — removed custom subdomain, multi-port, and `--server` flag documentation (not yet supported)
+
+### v1.4.2
+- **Removed custom subdomain feature** — `--subdomain` flag and `ClaimSubdomain` logic removed entirely; all tunnels now get random names
+- **Bug fix** — `mekong status` in daemon mode now writes the state file the moment the tunnel URL arrives instead of after disconnect
+
 ### v1.4.1
 - **Bug fix** — `--subdomain` flag now works in any position (`mekong 3000 --subdomain myapp` no longer errors)
 - **Server** — per-IP tunnel limit is now configurable via `MAX_TUNNELS_PER_IP` env var (default: 3)
 
 ### v1.4.0
-- **Custom subdomain** — `mekong 8080 --subdomain myapp` requests a named URL; server suggests the next available name if taken
-- **Multi-port** — `mekong 3000 8080` exposes multiple ports at once, each with its own URL
 - **Daemon mode** — `mekong -d 3000` runs in the background and frees the terminal; logs go to `~/.mekong/mekong.log`
 - **Status command** — `mekong status` shows your active tunnels (URL, uptime, local port); `mekong status 3000` filters by port
 - **Stop command** — `mekong stop` gracefully stops a background tunnel
