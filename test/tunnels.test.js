@@ -66,3 +66,13 @@ test('proxy endpoint forwards to local target', async () => {
   await new Promise((resolve) => app.server.close(resolve));
   await new Promise((resolve) => upstream.close(resolve));
 });
+
+
+test('ignores corrupted persistence file gracefully', () => {
+  const file = makeTempFile('bad.json');
+  fs.mkdirSync(path.dirname(file), { recursive: true });
+  fs.writeFileSync(file, '{bad json', 'utf8');
+
+  const store = new TunnelStore({ domain: 'example.com', dataFile: file });
+  assert.equal(store.list().length, 0);
+});

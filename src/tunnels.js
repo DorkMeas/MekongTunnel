@@ -22,16 +22,22 @@ export class TunnelStore {
   }
 
   load() {
-    if (!fs.existsSync(this.dataFile)) return;
+    if (!this.dataFile || !fs.existsSync(this.dataFile)) return;
 
-    const raw = fs.readFileSync(this.dataFile, 'utf8');
-    const parsed = JSON.parse(raw);
+    try {
+      const raw = fs.readFileSync(this.dataFile, 'utf8');
+      if (!raw.trim()) return;
 
-    if (!Array.isArray(parsed.tunnels)) return;
+      const parsed = JSON.parse(raw);
+      if (!Array.isArray(parsed.tunnels)) return;
 
-    for (const tunnel of parsed.tunnels) {
-      if (!tunnel?.subdomain || !isValidSubdomain(tunnel.subdomain)) continue;
-      this.tunnels.set(tunnel.subdomain, tunnel);
+      for (const tunnel of parsed.tunnels) {
+        if (!tunnel?.subdomain || !isValidSubdomain(tunnel.subdomain)) continue;
+        this.tunnels.set(tunnel.subdomain, tunnel);
+      }
+    } catch {
+      // Ignore invalid/corrupted state file and continue with empty store.
+      this.tunnels.clear();
     }
   }
 
