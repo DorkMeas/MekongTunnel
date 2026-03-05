@@ -14,6 +14,12 @@ function makeTempFile(name) {
 test('creates and lists tunnel', () => {
   const store = new TunnelStore({ domain: 'example.com' });
   const tunnel = store.create({ localHost: '127.0.0.1', localPort: 3000 });
+
+import { TunnelStore } from '../src/tunnels.js';
+
+test('creates and lists tunnel', () => {
+  const store = new TunnelStore('example.com');
+  const tunnel = store.create(3000);
   assert.equal(tunnel.localPort, 3000);
   assert.match(tunnel.publicUrl, /^https:\/\//);
   assert.equal(store.list().length, 1);
@@ -76,3 +82,10 @@ test('ignores corrupted persistence file gracefully', () => {
   const store = new TunnelStore({ domain: 'example.com', dataFile: file });
   assert.equal(store.list().length, 0);
 });
+
+  const store = new TunnelStore('example.com');
+  const tunnel = store.create(3000);
+  assert.equal(store.delete(tunnel.subdomain), true);
+  assert.equal(store.delete(tunnel.subdomain), false);
+});
+

@@ -53,6 +53,15 @@ export class TunnelStore {
   }
 
   create({ localPort, localHost = '127.0.0.1' }) {
+import { generateSubdomain } from './domain.js';
+
+export class TunnelStore {
+  constructor(domain) {
+    this.domain = domain;
+    this.tunnels = new Map();
+  }
+
+  create(localPort) {
     let subdomain = generateSubdomain();
     while (this.tunnels.has(subdomain)) {
       subdomain = generateSubdomain();
@@ -69,6 +78,10 @@ export class TunnelStore {
 
     this.tunnels.set(subdomain, tunnel);
     this.save();
+      localPort,
+      createdAt: new Date().toISOString()
+    };
+    this.tunnels.set(subdomain, tunnel);
     return tunnel;
   }
 
@@ -84,5 +97,7 @@ export class TunnelStore {
     const deleted = this.tunnels.delete(subdomain);
     if (deleted) this.save();
     return deleted;
+  delete(subdomain) {
+    return this.tunnels.delete(subdomain);
   }
 }
