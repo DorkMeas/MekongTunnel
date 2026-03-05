@@ -61,3 +61,25 @@ This forwards the request to `http://localHost:localPort/api/ping` of that tunne
 ```bash
 docker compose up --build
 ```
+
+
+## Resolve GitHub merge conflicts (CLI)
+
+If GitHub shows conflicts on these files:
+- `.env.example`
+- `README.md`
+- `docker-compose.yml`
+- `src/server.js`
+- `src/tunnels.js`
+- `test/tunnels.test.js`
+
+Use:
+
+```bash
+# after starting a merge/rebase and conflicts appear
+scripts/resolve-pr-conflicts.sh ours
+# then
+git commit
+```
+
+If you want to keep target-branch versions instead, run `scripts/resolve-pr-conflicts.sh theirs`.
