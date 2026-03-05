@@ -6,5 +6,8 @@ services:
     environment:
       - PORT=8080
       - DOMAIN=${DOMAIN:-localhost}
+      - DATA_FILE=/app/data/tunnels.json
+    volumes:
+      - ./data:/app/data
     ports:
       - "8080:8080"

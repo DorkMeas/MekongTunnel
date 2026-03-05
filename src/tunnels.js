@@ -1,4 +1,58 @@
 import crypto from 'node:crypto';
+import fs from 'node:fs';
+import path from 'node:path';
+import { generateSubdomain, isValidSubdomain } from './domain.js';
+
+function normalizeDomain(domain) {
+  return String(domain || 'localhost')
+    .trim()
+    .replace(/^https?:\/\//, '')
+    .replace(/\/+$/, '');
+}
+
+export class TunnelStore {
+  constructor({ domain, dataFile } = {}) {
+    this.domain = normalizeDomain(domain);
+    this.dataFile = dataFile;
+    this.tunnels = new Map();
+
+    if (this.dataFile) {
+      this.load();
+    }
+  }
+
+  load() {
+    if (!this.dataFile || !fs.existsSync(this.dataFile)) return;
+
+    try {
+      const raw = fs.readFileSync(this.dataFile, 'utf8');
+      if (!raw.trim()) return;
+
+      const parsed = JSON.parse(raw);
+      if (!Array.isArray(parsed.tunnels)) return;
+
+      for (const tunnel of parsed.tunnels) {
+        if (!tunnel?.subdomain || !isValidSubdomain(tunnel.subdomain)) continue;
+        this.tunnels.set(tunnel.subdomain, tunnel);
+      }
+    } catch {
+      // Ignore invalid/corrupted state file and continue with empty store.
+      this.tunnels.clear();
+    }
+  }
+
+  save() {
+    if (!this.dataFile) return;
+
+    fs.mkdirSync(path.dirname(this.dataFile), { recursive: true });
+    fs.writeFileSync(
+      this.dataFile,
+      JSON.stringify({ tunnels: this.list() }, null, 2),
+      'utf8'
+    );
+  }
+
+  create({ localPort, localHost = '127.0.0.1' }) {
 import { generateSubdomain } from './domain.js';
 
 export class TunnelStore {
@@ -17,6 +71,13 @@ export class TunnelStore {
       id: crypto.randomUUID(),
       subdomain,
       publicUrl: `https://${subdomain}.${this.domain}`,
+      localHost,
+      localPort,
+      createdAt: new Date().toISOString()
+    };
+
+    this.tunnels.set(subdomain, tunnel);
+    this.save();
       localPort,
       createdAt: new Date().toISOString()
     };
@@ -28,6 +89,14 @@ export class TunnelStore {
     return [...this.tunnels.values()];
   }
 
+  get(subdomain) {
+    return this.tunnels.get(subdomain);
+  }
+
+  delete(subdomain) {
+    const deleted = this.tunnels.delete(subdomain);
+    if (deleted) this.save();
+    return deleted;
   delete(subdomain) {
     return this.tunnels.delete(subdomain);
   }
