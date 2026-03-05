@@ -138,6 +138,21 @@ Logs are written to `~/.mekong/mekong.log` — each user has their own state und
 
 ---
 
+
+## Node.js (Pure JS) Reference
+
+If you want a pure JavaScript/Node.js version for the domain-generation flow, a minimal implementation is included under `nodejs/`.
+
+```bash
+cd nodejs
+npm test
+npm start
+```
+
+Available endpoints:
+- `GET /health` → service health check
+- `POST /tunnels` → returns a generated memorable subdomain
+
 ## What Is This?
 
 MekongTunnel is a self-hosted SSH tunnel server written in Go.
