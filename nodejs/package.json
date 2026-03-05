@@ -1,0 +1,11 @@
+{
+  "name": "mekongtunnel-nodejs",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Pure Node.js reference components for MekongTunnel",
+  "type": "module",
+  "scripts": {
+    "start": "node src/server.js",
+    "test": "node --test"
+  }
+}
